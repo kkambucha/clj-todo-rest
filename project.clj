@@ -9,6 +9,5 @@
                  [ring/ring-core "1.9.5"]
                  [ring/ring-jetty-adapter "1.9.5"]
                  [compojure "1.6.3"]]
-  :plugins [[lein-ring "0.12.6"]]
   :repl-options {:init-ns clj-todo-rest.core}
   :main clj-todo-rest.core)

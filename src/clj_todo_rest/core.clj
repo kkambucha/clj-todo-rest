@@ -6,36 +6,50 @@
             [compojure.route :as compojure-route]))
 
 (def todos
-  (atom []))
+  (atom ()))
 
-(defn page-index [request]
-  {:status  200
-   :headers {"content-type" "text/json"}
-   :body    (json/write-str (deref todos))})
+(def todo-id
+  (atom 1))
 
-(defn page-second [request]
-  {:status  200
-   :headers {"content-type" "text/plain"}
-   :body    "Second page"})
+(defn add-todo [todo]
+  (swap! todos #(conj % {:id @todo-id :text todo}))
+  (swap! todo-id #(inc %))
+  )
 
-(defn page-404 [request]
+(defn page-404 []
   {:status  404
    :headers {"content-type" "text/plain"}
    :body    "Page not found"})
 
+(defn get-all-todos []
+  {:status  200
+   :headers {"content-type" "text/json"}
+   :body    (json/write-str @todos)})
+
 (defn post-todo [request]
   (let [body (json/read-str (slurp (:body request)))]
     (log/info body)
-    (swap! todos #(conj % body))
+    (add-todo body)
     {:status  200
-     :headers {"content-type" "text/plain"}
-     :body    (json/write-str (deref todos))
+     :headers {"content-type" "text/json"}
+     :body    (json/write-str @todos)
      }))
 
+(defn find-todo-by-id [id]
+  (filter #(= (:id %) id) @todos))
+
+(defn get-todo-by-id
+  [request]
+  (log/info request)
+  (let [id (Integer/parseInt (:id (:params request)))]
+    {:status 200
+     :headers {"content-type" "text/json"}
+     :body (json/write-str (find-todo-by-id id))}))
+
 (compojure/defroutes app
-                     (compojure/GET "/" request (page-index request))
+                     (compojure/GET "/" request (get-all-todos))
+                     (compojure/GET "/:id" request (get-todo-by-id request))
                      (compojure/POST "/" request (post-todo request))
-                     (compojure/GET "/second" request (page-second request))
                      (compojure-route/not-found page-404))
 
 (defn -main [& args]

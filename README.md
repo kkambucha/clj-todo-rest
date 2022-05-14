@@ -4,7 +4,7 @@ This is a Clojure todo rest-api for learning purposes
 
 ## Usage
 
-`lein start`
+`lein run`
 
 ## License
 

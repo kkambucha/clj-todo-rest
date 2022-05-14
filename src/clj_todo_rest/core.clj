@@ -1,16 +1,22 @@
 (ns clj-todo-rest.core
+  (:use compojure.core)
   (:require [ring.adapter.jetty :as jetty]
-            [compojure.core :refer [GET POST defroutes]]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [clojure.tools.logging :as log]
+            [compojure.core :as compojure]
+            [compojure.route :as compojure-route]))
 
 (def todos
-  (ref []))
+  (atom []))
 
 (defn post-todo [request]
-  (dosync (ref-set todos (conj todos request)))
-  {:status 404
-   :headers {"content-type" "text/plain"}
-   :body (json/write-str (deref todos))})
+  (let [body (json/read-str (slurp (:body request)))]
+    (log/info body)
+    (swap! todos #(conj % body))
+    {:status 200
+     :headers {"content-type" "text/plain"}
+     :body (json/write-str (deref todos))
+     }))
 
 (defn page-404 [request]
   {:status 404
@@ -27,16 +33,11 @@
    :headers {"content-type" "text/plain"}
    :body "Second page"})
 
-(defroutes app
-           (GET "/" request (page-index request))
-           (POST "/" request (post-todo request))
-           (GET "/second" request (page-second request))
-           page-404)
-
-(defn handler [request]
-  {:status 200
-   :headers {"Content-Type" "text/plain"}
-   :body "Hello, ring!"})
+(compojure/defroutes app
+           (compojure/GET "/" request (page-index request))
+           (compojure/POST "/" request (post-todo request))
+           (compojure/GET "/second" request (page-second request))
+           (compojure-route/not-found page-404))
 
 (defn -main []
   (jetty/run-jetty app {:port 4000}))

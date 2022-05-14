@@ -1,6 +1,12 @@
 (ns clj-todo-rest.core
   (:require [ring.adapter.jetty :as jetty]
-            [compojure.core :refer [GET defroutes]]))
+            [compojure.core :refer [GET defroutes]]
+            [clojure.data.json :as json]))
+
+(def todos
+  (ref {
+        :list []
+        }))
 
 (defn page-404 [request]
   {:status 404
@@ -9,8 +15,8 @@
 
 (defn page-index [request]
   {:status 200
-   :headers {"content-type" "text/plain"}
-   :body "Index page"})
+   :headers {"content-type" "text/json"}
+   :body (json/write-str (deref todos))})
 
 (defn page-second [request]
   {:status 200

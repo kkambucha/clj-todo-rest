@@ -1,5 +1,26 @@
 (ns clj-todo-rest.core
-  (:require [ring.adapter.jetty :as jetty]))
+  (:require [ring.adapter.jetty :as jetty]
+            [compojure.core :refer [GET defroutes]]))
+
+(defn page-404 [request]
+  {:status 404
+   :headers {"content-type" "text/plain"}
+   :body "Page not found"})
+
+(defn page-index [request]
+  {:status 200
+   :headers {"content-type" "text/plain"}
+   :body "Index page"})
+
+(defn page-second [request]
+  {:status 200
+   :headers {"content-type" "text/plain"}
+   :body "Second page"})
+
+(defroutes app
+           (GET "/" request (page-index request))
+           (GET "/second" request (page-second request))
+           page-404)
 
 (defn handler [request]
   {:status 200
@@ -7,4 +28,4 @@
    :body "Hello, ring!"})
 
 (defn -main []
-  (jetty/run-jetty handler {:port 4000}))
+  (jetty/run-jetty app {:port 4000}))

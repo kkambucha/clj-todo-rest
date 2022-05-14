@@ -1,5 +1,4 @@
 (ns clj-todo-rest.core
-  (:use compojure.core)
   (:require [ring.adapter.jetty :as jetty]
             [clojure.data.json :as json]
             [clojure.tools.logging :as log]
